@@ -1,0 +1,106 @@
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform' version '1.4.31'
+    id 'com.android.library'
+    id 'kotlin-android-extensions'
+    id 'org.jetbrains.kotlin.plugin.serialization' version "1.4.31"
+}
+
+group = 'ru.slava_kornienko'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    google()
+    jcenter()
+    mavenCentral()
+}
+
+kotlin {
+    android()
+    iosX64('ios') {
+        binaries {
+            framework {
+                baseName = 'GoodsSDK'
+            }
+        }
+    }
+    jvm()
+
+    def ktorVersion = "1.5.0"
+    def coroutinesVersion = "1.4.2-native-mt"
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation "io.ktor:ktor-client-core:${ktorVersion}"
+                implementation "io.ktor:ktor-client-json:${ktorVersion}"
+                implementation "io.ktor:ktor-client-serialization:${ktorVersion}"
+                implementation "io.ktor:ktor-client-logging:$ktorVersion"
+
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${coroutinesVersion}") {
+                    version {
+                        strictly(coroutinesVersion)
+                    }
+                }
+
+                implementation "org.kodein.di:kodein-di:7.1.0"
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation kotlin('test-common')
+                implementation kotlin('test-annotations-common')
+            }
+        }
+        androidMain {
+            dependencies {
+                implementation "io.ktor:ktor-client-okhttp:${ktorVersion}"
+                implementation 'com.google.android.material:material:1.2.1'
+            }
+        }
+        androidTest {
+            dependencies {
+                implementation kotlin('test-junit')
+                implementation 'junit:junit:4.13'
+            }
+        }
+        iosMain {
+            dependencies {
+                implementation "io.ktor:ktor-client-ios:${ktorVersion}"
+            }
+        }
+        iosTest {
+        }
+        jvmMain {
+            dependencies {
+                implementation kotlin('test-junit')
+                implementation 'junit:junit:4.13'
+
+                implementation "io.ktor:ktor-client-okhttp:${ktorVersion}"
+                implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation "io.ktor:ktor-client-mock-jvm:${ktorVersion}"
+                implementation "io.mockk:mockk:1.10.2"
+                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:${coroutinesVersion}"
+
+                implementation kotlin('test')
+                implementation kotlin('test-junit')
+            }
+        }
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions { jvmTarget = JavaVersion.VERSION_1_8 }
+    }
+}
+
+android {
+    compileSdkVersion 29
+    sourceSets.main.manifest.srcFile('src/androidMain/AndroidManifest.xml')
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 29
+    }
+}
